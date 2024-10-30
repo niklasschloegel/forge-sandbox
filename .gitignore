@@ -16,3 +16,10 @@ lerna-debug.log*
 .env.local
 junit.xml
 .eslintcache
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
