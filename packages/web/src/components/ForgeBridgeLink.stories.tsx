@@ -1,11 +1,10 @@
-import React from "react";
-import { ComponentMeta } from "@storybook/react";
+import { Meta } from "@storybook/react";
 import { ForgeBridgeLink } from "@/components/ForgeBridgeLink";
 import { Product } from "@/lib/forge-context";
 
 export default {
   component: ForgeBridgeLink,
-} as ComponentMeta<typeof ForgeBridgeLink>;
+} as Meta<typeof ForgeBridgeLink>;
 
 export function Example() {
   return (
@@ -34,11 +33,7 @@ export function NewWindow() {
 export function OverrideOnClick() {
   const onClick = () => window.alert("Overridden onClick");
   return (
-    <ForgeBridgeLink
-      href="https://google.com"
-      product={Product.jira}
-      onClick={onClick}
-    >
+    <ForgeBridgeLink href="https://google.com" product={Product.jira} onClick={onClick}>
       https://google.com
     </ForgeBridgeLink>
   );

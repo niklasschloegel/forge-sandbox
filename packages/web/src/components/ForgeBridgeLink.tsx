@@ -1,18 +1,10 @@
 import { getAppRootUrl, getForgeContext, Product } from "@/lib/forge-context";
 import { router } from "@forge/bridge";
-import React, {
-  AnchorHTMLAttributes,
-  DetailedHTMLProps,
-  useCallback,
-  useState,
-} from "react";
+import { AnchorHTMLAttributes, DetailedHTMLProps, MouseEventHandler, useCallback, useState } from "react";
 import { useAsync } from "react-use";
 import { Except } from "type-fest";
 
-export type Props = Except<
-  DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>,
-  "href" | "target" | "onClick"
-> & {
+export type Props = Except<DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>, "href" | "target" | "onClick"> & {
   /** Can be a complete URL or an absolute path starting with '/' within the Atlassian platform. */
   href: string;
   /** If `true` opens the `href` location in a new window. */
@@ -29,14 +21,7 @@ export type Props = Except<
  * If `href` starts with a `/`, the site URL of the atlassian installation is prepended to represent an absolute URL within the Atlassian plattform.
  * If `href` starts with `@app/` the plugin's root path to static resources is appended to represent an absolute URL to the apps installation route.
  */
-export function ForgeBridgeLink({
-  href,
-  newWindow,
-  onClick,
-  product,
-  children,
-  ...props
-}: Props) {
+export function ForgeBridgeLink({ href, newWindow, onClick, product, children, ...props }: Props) {
   const [_href, _setHref] = useState<string>();
   useAsync(async () => {
     if (href.startsWith("/")) {
@@ -49,7 +34,7 @@ export function ForgeBridgeLink({
     }
     _setHref(href);
   }, [href]);
-  const _onClick = useCallback(
+  const _onClick: MouseEventHandler<HTMLAnchorElement> = useCallback(
     async (event) => {
       event.preventDefault();
       if (!_href) return;
@@ -67,7 +52,7 @@ export function ForgeBridgeLink({
         console.warn(`did not confirm to open link ${_href}`, e);
       }
     },
-    [_href, onClick, newWindow],
+    [_href, onClick, newWindow]
   );
   return (
     <a {...props} href={_href} onClick={_onClick}>

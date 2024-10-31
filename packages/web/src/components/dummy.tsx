@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { ReactElement, useState } from "react";
 
 export interface Props {
   foo: string;
   bar?: string;
   is?: boolean;
-  children?: Array<JSX.Element | string>;
+  children?: (ReactElement | string)[];
 }
 
 export function Dummy({ foo, bar = "hiii", is = false, children }: Props) {
@@ -26,7 +26,7 @@ export function Dummy({ foo, bar = "hiii", is = false, children }: Props) {
     <>
       <div>
         {state.foo}
-        {state?.foo === "reee" ? <strong>!!!</strong> : null} {state.bar}
+        {state.foo === "reee" ? <strong>!!!</strong> : null} {state.bar}
         {is ? "!" : null}
       </div>
       <div>{children}</div>

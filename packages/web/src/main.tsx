@@ -1,13 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
-import "./global.scss";
+import App from "@/App";
+import "@/global.scss";
 
 const elementById = document.getElementById("root");
 if (!elementById) throw new Error("missing root element for app");
+// eslint-disable-next-line deprecation/deprecation -- React 18 in React 17 mode first
 ReactDOM.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-  elementById,
+  elementById
 );

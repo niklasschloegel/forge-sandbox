@@ -1,16 +1,11 @@
 {
   "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
+    "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
     "lib": ["esnext"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "bridge/*": ["../packages/bridge/src/*"],
-    },
-    "jsx": "react",
-    "jsxFactory": "ForgeUI.createElement"
+    "baseUrl": "./"
   },
   "include": ["src"]
 }

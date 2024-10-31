@@ -1,9 +1,11 @@
-import React, { Children, isValidElement, ReactChild, ReactNode } from "react";
-import { ForgeModule } from "@/components/ForgeModule";
+import { Children, isValidElement, ReactNode } from "react";
+import * as React from "react";
+import { ForgeModule, ForgeModuleProps } from "@/components/ForgeModule";
+import { AllExtensions, getForgeContext } from "@/lib/forge-context";
 import { useAsync } from "react-use";
-import { getForgeContext } from "@/lib/forge-context";
+import { ForgeModal, ForgeModalProps } from "@/components/ForgeModal.tsx";
 
-interface Props {
+interface ForgeModulesProps {
   children?: ReactNode;
 }
 
@@ -18,42 +20,31 @@ interface Props {
  *     <ForgeModule moduleKey="panel" element={<Panel/>} />
  * </ForgeModules>
  */
-export function ForgeModules({ children }: Props) {
-  const modules = createForgeModuleObjectsFromChildren(children);
-  const contextState = useAsync(() => getForgeContext());
+export function ForgeModules({ children }: ForgeModulesProps): React.ReactElement {
+  const modules = collectPropsFromChildren(children);
+  const contextState = useAsync(() => getForgeContext<AllExtensions>());
   return (
     <>
-      {contextState.value &&
-        (modules.find(
-          ({ moduleKey }) => moduleKey === contextState.value?.moduleKey,
-        )?.element ?? (
-          <div>unknown module key {contextState.value?.moduleKey}</div>
-        ))}
+      {!!contextState.value &&
+        (modules.find(({ moduleKey }) => moduleKey === contextState.value?.moduleKey)?.element ?? <div>unknown module key {contextState.value.moduleKey}</div>)}
     </>
   );
 }
 
-interface ForgeModuleObject {
-  moduleKey: string;
-  element: ReactChild;
-}
+type ForgeModuleObject = Partial<ForgeModuleProps & ForgeModalProps>;
 
-function createForgeModuleObjectsFromChildren(
-  children: ReactNode,
-): ForgeModuleObject[] {
+function collectPropsFromChildren(children: ReactNode): ForgeModuleObject[] {
   const modules: ForgeModuleObject[] = [];
   Children.forEach(children, (child) => {
     if (!isValidElement(child)) {
       return;
     }
-    if (child.type !== ForgeModule) {
-      const childName =
-        typeof child.type === "string" ? child.type : child.type.name;
-      throw new Error(
-        `[${childName}] is not a <ForgeModule> component. All component children of <ForgeModules> must be a <ForgeModule>`,
-      );
+    if (child.type !== ForgeModule && child.type !== ForgeModal) {
+      const childName = typeof child.type === "string" ? child.type : child.type.name;
+      throw new Error(`[${childName}] is not a <ForgeModule> component. All component children of <ForgeModules> must be a <ForgeModule> or <ForgeModal>`);
     }
-    modules.push(child.props);
+    const props = child.props as ForgeModuleObject;
+    modules.push(props);
   });
   return modules;
 }

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import logo from "./logo.svg";
-import "./App.scss";
-import { Dummy } from "./components/dummy";
+import { useEffect, useState } from "react";
+import logo from "@/logo.svg";
+import "@/App.scss";
+import { Dummy } from "@/components/dummy";
 import { getText } from "@/lib/get-text-client";
 
 export default function App() {
@@ -35,21 +35,11 @@ export default function App() {
         <p>{data ? data : "Loading..."}</p>
         <Dummy foo={"reee"} />
         <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="App-link" href="https://reactjs.org" target="_blank" rel="noopener noreferrer">
             Learn React
           </a>
           {" | "}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="App-link" href="https://vitejs.dev/guide/features.html" target="_blank" rel="noopener noreferrer">
             Vite Docs
           </a>
         </p>

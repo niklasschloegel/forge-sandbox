@@ -1,14 +1,15 @@
 {
   "extends": "@tsconfig/vite-react/tsconfig.json",
   "compilerOptions": {
-    "jsx": "react",
+    "strictNullChecks": true,
     "skipLibCheck": true,
+    "esModuleInterop": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "allowJs": true,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
+      "@assets/*": ["assets/*"],
+      "@sb/*": [".storybook/*"],
       "bridge/*": ["../bridge/src/*"]
     }
   },

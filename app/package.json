@@ -6,10 +6,10 @@
   "scripts": {
     "build": "./build.js",
     "dev": "./watch.js",
-    "lint": "npm-run-all 'lint:*'",
-    "lint:eslint": "eslint . --quiet --ext ts,cjs,js --cache",
-    "lint:types": "tsc --noEmit",
-    "test": "jest"
+    "lint": "../node_modules/.bin/npm-run-all 'lint:*'",
+    "lint:eslint": "../node_modules/.bin/oxlint . --quiet --import-plugin --jest-plugin --react-perf-plugin && ../node_modules/.bin/eslint . --quiet --cache",
+    "lint:types": "../node_modules/.bin/tsc --noEmit",
+    "test": "../node_modules/.bin/jest"
   },
   "dependencies": {
     "@forge/resolver": "^1.6.1",
@@ -18,9 +18,9 @@
     "web": "*"
   },
   "devDependencies": {
-    "@tsconfig/node18": "^18.2.4",
     "chokidar": "^3.6.0",
     "esbuild": "^0.24.0",
+    "linting": "0.0.0",
     "zod": "^3.23.8"
   }
 }

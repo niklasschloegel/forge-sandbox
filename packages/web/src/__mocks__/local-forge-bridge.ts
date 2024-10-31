@@ -3,11 +3,7 @@ import type bridgeType from "@forge/bridge";
 import { Flag } from "@forge/bridge/out/flag/flag";
 import { InvokePayload, Subscription } from "@forge/bridge/out/types";
 import { createBrowserHistory, History } from "history";
-import {
-  AllExtensions,
-  CustomModalContext,
-  ForgeContext,
-} from "@/lib/forge-context";
+import { AllExtensions, CustomModalContext, ForgeContext } from "@/lib/forge-context";
 import { showDialog } from "@/__mocks__/local-forge-bridge/dialog.ts";
 
 console.warn("mocking '@forge/bridge' in dev mode");
@@ -109,10 +105,7 @@ const bridge: DeepPartial<typeof bridgeType> = {
             : undefined,
           isNewToIssue: getContextProp("extension.isNewToIssue", false),
         },
-        localId: getContextProp(
-          "localId",
-          "ari:cloud:ecosystem::extension/appId/envId/route",
-        ),
+        localId: getContextProp("localId", "ari:cloud:ecosystem::extension/appId/envId/route"),
         locale: getContextProp("locale"),
         moduleKey: getContextProp("moduleKey", "agile-hive-main"),
         siteUrl: getContextProp("siteUrl", ""),
@@ -133,18 +126,12 @@ const bridge: DeepPartial<typeof bridgeType> = {
           htmlElement.dataset.colorMode = colorScheme;
         };
 
-        const initialColorScheme = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches
-          ? "dark"
-          : "light";
+        const initialColorScheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         setTheme(initialColorScheme);
 
-        window
-          .matchMedia("(prefers-color-scheme: dark)")
-          .addEventListener("change", (event) => {
-            setTheme(event.matches ? "dark" : "light");
-          });
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
+          setTheme(event.matches ? "dark" : "light");
+        });
       },
     },
     async close(payload?: unknown): Promise<void> {
@@ -170,21 +157,13 @@ function getContextProp(param: string): string;
 function getContextProp<T>(param: string, defaultResult?: T): T;
 function getContextProp<T>(param: string, defaultResult?: T): T {
   const envVar = paramToEnvVar(param);
-  return (new URLSearchParams(window.location.search).get(param) ??
-    forgeContextEnvVars?.[envVar] ??
-    defaultResult ??
-    param) as T;
+  return (new URLSearchParams(window.location.search).get(param) ?? forgeContextEnvVars?.[envVar] ?? defaultResult ?? param) as T;
 }
 function hasContextProp(param: string): boolean {
   const envVar = paramToEnvVar(param);
   const envVarKeys = Object.keys(forgeContextEnvVars ?? {});
-  const queryParamKeys = Array.from(
-    new URLSearchParams(window.location.search).keys(),
-  );
-  return (
-    envVarKeys.some((key) => key.startsWith(envVar)) ||
-    queryParamKeys.some((key) => key.startsWith(param))
-  );
+  const queryParamKeys = Array.from(new URLSearchParams(window.location.search).keys());
+  return envVarKeys.some((key) => key.startsWith(envVar)) || queryParamKeys.some((key) => key.startsWith(param));
 }
 
 function paramToEnvVar(string: string): string {

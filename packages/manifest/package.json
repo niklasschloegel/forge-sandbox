@@ -6,11 +6,14 @@
   "scripts": {
     "dev": "chokidar 'template/*.yml' --initial -c 'npm run build'",
     "build": "./build.js",
-    "lint": "./build.js && ./lint.js"
+    "lint": "../../node_modules/.bin/npm-run-all 'lint:*'",
+    "lint:eslint": "../../node_modules/.bin/oxlint . --quiet --import-plugin --jest-plugin --react-perf-plugin && ../../node_modules/.bin/eslint . --quiet --cache",
+    "lint:manifest": "./build.js && ./lint.js"
   },
   "devDependencies": {
     "@forge/manifest": "^5.5.3",
     "chokidar-cli": "^3.0.0",
+    "linting": "0.0.0",
     "lodash-es": "^4.17.21",
     "yaml": "^2.6.0"
   }

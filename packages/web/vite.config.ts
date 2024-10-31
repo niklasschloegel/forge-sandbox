@@ -1,52 +1,118 @@
-import { defineConfig, loadEnv, PluginOption } from "vite";
-import react from "@vitejs/plugin-react";
-import eslint from "vite-plugin-eslint";
-import StylelintPlugin from "vite-plugin-stylelint";
+import { defineConfig, loadEnv, UserConfigExport } from "vite";
 import { resolve } from "path";
+import viteReact from "@vitejs/plugin-react";
+import eslintPlugin from "@nabla/vite-plugin-eslint";
+import StylelintPlugin from "vite-plugin-stylelint";
+import { sassOptions } from "./sassrc";
+import htmlPlugin from "vite-plugin-html-config";
+import svgr from "vite-plugin-svgr";
+import { readFile } from "fs/promises";
+import oxlintPlugin from "vite-plugin-oxlint";
+import { createRequire } from "node:module";
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
+const require = createRequire(import.meta.url);
+
+async function readAtlassianThemeFile(path: string, selector: string): Promise<string> {
+  const content = await readFile(require.resolve(path), { encoding: "utf8" });
+  const match = /^export default "(.*)";$/m.exec(content);
+  if (!match) return "";
+  const [, style] = match;
+  return style
+    .replace(/^.+\{/s, selector + "{")
+    .replace(/\s+color-scheme: \w+;\\n/, "")
+    .replace(/\\n/g, "");
+}
+
+// https://vitejs.dev/config//
+export default defineConfig(async ({ mode }) => {
+  const env = {
+    ...loadEnv(mode, resolve(__dirname, "../.."), ""),
+    ...loadEnv(mode, __dirname, ""),
+  };
+  const isLocalDev = env.LOCAL_DEV === "true";
   const forgeContextVars = Object.fromEntries(
     Object.entries(env)
-      .filter(
-        ([key]) => key.startsWith("FORGE_CONTEXT_") || key.startsWith("FC_"),
-      )
-      .map(([key, value]) => [
-        key,
-        value.replace("FORGE_CONTEXT_", "").replace("FC_", ""),
-      ]),
+      .filter(([key]) => key.startsWith("FORGE_CONTEXT_") || key.startsWith("FC_"))
+      .map(([key, value]) => [key, value.replace("FORGE_CONTEXT_", "").replace("FC_", "")])
   );
+  let atlassianTheme = "";
+  if (isLocalDev) {
+    const atlassianLightTheme = await readAtlassianThemeFile("@atlaskit/tokens/dist/esm/artifacts/themes/atlassian-light", '[data-color-mode="light"]');
+    const atlassianDarkTheme = await readAtlassianThemeFile("@atlaskit/tokens/dist/esm/artifacts/themes/atlassian-dark", '[data-color-mode="dark"]');
+    atlassianTheme = atlassianLightTheme + atlassianDarkTheme;
+    console.log(`Proxy REST API to ${env.ATLASSIAN_BASE_URL}`);
+  }
   return {
     plugins: [
-      react({
-        jsxRuntime: "classic",
+      svgr({
+        svgrOptions: {
+          replaceAttrValues: {
+            black: "currentColor",
+            "#000": "currentColor",
+            "#000000": "currentColor",
+          },
+          plugins: ["@svgr/plugin-svgo", "@svgr/plugin-jsx"],
+          svgoConfig: {
+            floatPrecision: 3,
+            plugins: [
+              {
+                name: "preset-default",
+                params: {
+                  overrides: {
+                    removeViewBox: false,
+                  },
+                },
+              },
+              "prefixIds",
+              "convertStyleToAttrs",
+            ],
+          },
+        },
+      }),
+      viteReact({
         exclude: /\.stories\.tsx?$/,
         include: "**/*.tsx",
       }),
-      eslint() as unknown as PluginOption,
-      StylelintPlugin() as unknown as PluginOption,
-    ],
+      oxlintPlugin({
+        configFile: "./eslintrc.js",
+      }),
+      eslintPlugin({
+        eslintOptions: {
+          cache: true,
+          cacheLocation: ".eslintcache-vite",
+        },
+      }),
+      StylelintPlugin({
+        exclude: ["**/node_modules/**", "**/jira-cloud-api/**", "**/jira-software-cloud?(-patched)-api/**", "**/design-tokens/**"],
+      }),
+      // adds atlaskit styling in dev:local mode only
+      isLocalDev &&
+        htmlPlugin({
+          style: atlassianTheme,
+          links: [{ rel: "stylesheet", href: require.resolve("@atlaskit/css-reset") }],
+        }),
+    ].filter((plugin) => plugin),
+    define: {
+      "process.env.FORGE_CONTEXT": JSON.stringify(forgeContextVars),
+      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV), // required by AtlasKit's InlineEdit / i18n
+      "process.env.LOCAL_DEV": JSON.stringify(isLocalDev),
+    },
     resolve: {
       alias: {
         "@": resolve(__dirname, "src"),
         "@assets": resolve(__dirname, "assets"),
-        bridge: "bridge/src",
-        ...(env.LOCAL_DEV === "true" && {
-          "@forge/bridge": resolve(
-            __dirname,
-            "src/__mocks__/local-forge-bridge.ts",
-          ),
+        "design-tokens": "design-tokens/generated",
+        "date-utils": resolve(__dirname, "../date-utils/src"),
+        bridge: resolve(__dirname, "../bridge/src"),
+        ...(isLocalDev && {
+          "@forge/bridge": resolve(__dirname, "src/__mocks__/local-forge-bridge.ts"),
+          "@forge/jira-bridge": resolve(__dirname, "src/__mocks__/local-forge-jira-bridge.ts"),
         }),
       },
     },
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
-      "process.env.FORGE_CONTEXT": JSON.stringify(forgeContextVars),
-    },
     base: "./",
     server: {
-      port: env.LOCAL_DEV === "true" ? 3000 : 3001,
+      port: isLocalDev ? 3000 : 3001,
       proxy: {
         "/rest": {
           target: env.ATLASSIAN_BASE_URL,
@@ -57,25 +123,6 @@ export default defineConfig(({ mode }) => {
             "User-Agent": "Node.js",
             // fixes XSRF errors in dev:local
             "X-Atlassian-Token": "no-check",
-          },
-          configure: (proxy, _options) => {
-            proxy.on("error", (err, _req, _res) => {
-              console.error("proxy error", err);
-            });
-            proxy.on("proxyReq", (proxyReq, req, _res) => {
-              console.info(
-                "Sending Request to the Target:",
-                proxyReq.method,
-                proxyReq.host + proxyReq.path,
-              );
-            });
-            proxy.on("proxyRes", (proxyRes, req, _res) => {
-              console.info(
-                "Received Response from the Target:",
-                proxyRes.statusCode,
-                req.url,
-              );
-            });
           },
         },
       },
@@ -89,6 +136,9 @@ export default defineConfig(({ mode }) => {
       modules: {
         localsConvention: "camelCaseOnly",
       },
+      preprocessorOptions: {
+        scss: sassOptions,
+      },
     },
-  };
+  } satisfies UserConfigExport;
 });

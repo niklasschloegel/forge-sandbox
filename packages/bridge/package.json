@@ -2,5 +2,13 @@
   "name": "bridge",
   "private": true,
   "version": "0.0.0",
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "lint": "../../node_modules/.bin/npm-run-all 'lint:*'",
+    "lint:eslint": "../../node_modules/.bin/oxlint . --quiet --import-plugin --jest-plugin --react-perf-plugin && ../../node_modules/.bin/eslint . --quiet --cache",
+    "lint:types": "../../node_modules/.bin/tsc --noEmit"
+  },
+  "devDependencies": {
+    "linting": "0.0.0"
+  }
 }

@@ -1,11 +1,11 @@
 import { ReactElement } from "react";
 
-export interface ForgeModuleProps {
-  moduleKey: string;
+export interface ForgeModalProps {
+  modalType: string;
   element: ReactElement;
 }
 
-export function ForgeModule(_props: ForgeModuleProps): null {
+export function ForgeModal(_props: ForgeModalProps): null {
   throw new Error(
     "A <ForgeModule> is only ever to be used as the child of <ForgeModules> element, never rendered directly. Please wrap your <ForgeModule> in a <ForgeModules>."
   );

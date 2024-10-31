@@ -1,17 +1,11 @@
 import { Router } from "react-router-dom";
-import React, {
-  ReactChild,
-  ReactNode,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from "react";
+import { ReactElement, ReactNode, useEffect, useLayoutEffect, useState } from "react";
 import { view } from "@forge/bridge";
 import { useAsync } from "react-use";
 import { Action, History, Location, To, Update } from "history";
 
-interface Props {
-  loadingView?: () => ReactChild;
+interface ForgeRouterProps {
+  loadingView?: () => ReactElement;
   children: ReactNode;
 }
 
@@ -28,13 +22,13 @@ interface Props {
  *   </Routes>
  * </ForgeRouter>
  */
-export function ForgeRouter({ loadingView, children }: Props) {
+export function ForgeRouter({ loadingView, children }: ForgeRouterProps) {
   const [history, setHistory] = useState<History | undefined>(undefined);
-  const [historyState, setHistoryState] = useState<Update | undefined>(
-    undefined,
-  );
+  const [historyState, setHistoryState] = useState<Update | undefined>(undefined);
   useAsync(async () => {
-    const newHistory = await view.createHistory();
+    // Typescript cannot narrow the type History
+    const historyObject: unknown = await view.createHistory();
+    const newHistory = historyObject as History;
     patchHistoryV4(newHistory);
     setHistory(newHistory);
   }, []);
@@ -62,13 +56,9 @@ export function ForgeRouter({ loadingView, children }: Props) {
   const loading = !history || !historyState;
   return (
     <>
-      {loading && loadingView?.()}
+      {!!loading && loadingView?.()}
       {!loading && (
-        <Router
-          navigator={history}
-          navigationType={historyState.action}
-          location={historyState.location}
-        >
+        <Router navigator={history} navigationType={historyState.action} location={historyState.location}>
           {children}
         </Router>
       )}
@@ -89,8 +79,6 @@ function patchHistoryV4(newHistory: History): void {
     if (typeof to === "string") {
       return to;
     }
-    return [to.pathname, to.search, to.hash]
-      .filter((str) => str !== undefined)
-      .join("");
+    return [to.pathname, to.search, to.hash].filter((str) => str !== undefined).join("");
   };
 }

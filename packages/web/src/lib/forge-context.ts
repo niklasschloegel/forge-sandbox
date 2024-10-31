@@ -5,8 +5,7 @@ import { memoize } from "lodash-es";
 /**
  * A `FullContext` with property types.
  */
-export interface ForgeContext<EXTENSION extends Extension = Extension>
-  extends FullContext {
+export interface ForgeContext<EXTENSION extends Extension = Extension> extends FullContext {
   environmentId: string;
   environmentType: string;
   extension: EXTENSION;
@@ -26,10 +25,7 @@ interface Extension {
 /**
  * Union of all possible extension types
  */
-export type AllExtensions = Extension &
-  Partial<IssuePanelExtension> &
-  Partial<ProjectPageExtension> &
-  Partial<ModalExtension>;
+export type AllExtensions = Extension & Partial<IssuePanelExtension> & Partial<ProjectPageExtension> & Partial<ModalExtension>;
 
 interface ContextProject {
   id: string;
@@ -65,8 +61,7 @@ export interface ProjectPageExtension extends Extension {
  *
  * @see https://developer.atlassian.com/platform/forge/custom-ui-bridge/modal
  */
-export interface ModalExtension<Context = CustomModalContext>
-  extends Extension {
+export interface ModalExtension<Context = CustomModalContext> extends Extension {
   modal: Context;
 }
 
@@ -77,9 +72,7 @@ export interface ModalExtension<Context = CustomModalContext>
  */
 export type CustomModalContext = unknown;
 
-function getTypedContext<EXTENSION extends Extension = Extension>(): Promise<
-  ForgeContext<EXTENSION>
-> {
+function getTypedContext<EXTENSION extends Extension = Extension>(): Promise<ForgeContext<EXTENSION>> {
   return view.getContext() as Promise<ForgeContext<EXTENSION>>;
 }
 
@@ -97,24 +90,19 @@ async function getInstanceBaseInfo(): Promise<InstanceBaseInfo> {
   return { siteUrl, appId, envId };
 }
 
-export async function getAppRootUrl(
-  product: Product = Product.jira,
-): Promise<string> {
+export async function getAppRootUrl(product: Product = Product.jira): Promise<string> {
   if (process.env.LOCAL_DEV === "true") return "localhost:3000";
   const { siteUrl, appId, envId } = await getInstanceBaseInfo();
   return `${siteUrl}/${product}/apps/${appId}/${envId}`;
 }
 
-export async function getSettingsRootUrl(
-  product: Product = Product.jira,
-): Promise<string> {
+export async function getSettingsRootUrl(product: Product = Product.jira): Promise<string> {
   if (process.env.LOCAL_DEV === "true") return "localhost:3000";
   const { siteUrl, appId, envId } = await getInstanceBaseInfo();
   return `${siteUrl}/${product}/settings/apps/${appId}/${envId}`;
 }
 
-const localIdPattern =
-  /ari:cloud:ecosystem::extension\/([\w-]+)\/([\w-]+)(?:\/.+)?/;
+const localIdPattern = /ari:cloud:ecosystem::extension\/([\w-]+)\/([\w-]+)(?:\/.+)?/;
 
 /**
  * Parses a `localId` of a `ForgeContext` and resolves the `appId` and `envId` part.
@@ -142,8 +130,6 @@ export enum Product {
 
 export class InvalidLocalIdError extends Error {
   constructor() {
-    super(
-      `the localId is invalid, it must have the pattern "${localIdPattern.source}"`,
-    );
+    super(`the localId is invalid, it must have the pattern "${localIdPattern.source}"`);
   }
 }
