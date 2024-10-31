@@ -17,6 +17,7 @@
     "test": "../../node_modules/.bin/jest"
   },
   "dependencies": {
+    "@atlaskit/tokens": "^2.0.5",
     "@forge/bridge": "^3.5.0",
     "bridge": "*",
     "lodash-es": "^4.17.21",
